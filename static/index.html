@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LifeLine AI v16.0 | Emergency &amp; Regular Medical Assistance Hub</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+
+<!-- FULL-SCREEN EMERGENCY SOS STROBE OVERLAY -->
+<div id="sosStrobeOverlay" class="sos-overlay">
+    <h1 style="font-size:52px; margin:0;">🚨 SOS RESCUE BEACON ACTIVE 🚨</h1>
+    <p style="font-size:20px; max-width:640px;">Flashing high-visibility SOS light &amp; loud acoustic siren to signal rescue boats and helicopters.</p>
+    <button type="button" class="btn-tool" style="font-size:18px; padding:14px 28px; background:#0f172a; color:#fff; border:2px solid #fff;" onclick="stopSosBeacon()">⏹️ TURN OFF SOS BEACON</button>
+</div>
+
+<div id="toastContainer" class="toast-container"></div>
+
+<!-- TOP EMERGENCY HELPLINE BAR -->
+<div class="helpline-topbar no-print">
+    <div style="font-weight:800;">🚨 24×7 EMERGENCY HELPLINES:</div>
+    <div class="helpline-badges">
+        <a href="tel:112" class="hl-pill">📞 112 National SOS</a>
+        <a href="tel:108" class="hl-pill">🚑 108 Ambulance</a>
+        <a href="tel:1078" class="hl-pill">🌊 1078 Flood/Cyclone</a>
+        <a href="tel:104" class="hl-pill">🩺 104 Doctor Advice</a>
+        <a href="tel:1066" class="hl-pill">🐍 1066 Poison Help</a>
+        <button type="button" class="hl-pill" style="background:#fef08a; color:#7f1d1d;" onclick="toggleSosSiren()" id="topSirenBtn">🔊 Rescue Siren</button>
+        <button type="button" class="hl-pill" style="background:#fff; color:#0f172a;" onclick="switchTab('tab-manual', 'Visual User Guide')">📖 User Manual</button>
+    </div>
+</div>
+
+<div class="container">
+    <!-- HEADER -->
+    <div class="header">
+        <div class="header-brand">
+            <div class="brand-icon">✚</div>
+            <div>
+                <h1>LifeLine AI — Emergency Disaster &amp; Regular Medical Assistance Hub</h1>
+                <p>Dual-Mode Triage (Emergency vs. Regular Daily Care) • Instant Top Manual Entry • Visual SVG Guides • 4-Language Voice</p>
+            </div>
+        </div>
+        <div id="liveHealthBox" style="background:rgba(255,255,255,0.14); padding:8px 14px; border-radius:10px; font-size:12px;">
+            <div>🟢 <b>Offline AI Ready:</b> Gemma3 + ChromaDB + SQLite</div>
+        </div>
+    </div>
+
+    <!-- 7 VISUAL ICON NAVIGATION TABS -->
+    <div class="nav-tabs no-print">
+        <button type="button" class="tab-btn active" id="btn-tab-triage" onclick="switchTab('tab-triage', 'Medical & Emergency Triage')"><span class="tab-icon">🩺</span><span>1. Emergency &amp; Daily Care</span></button>
+        <button type="button" class="tab-btn" id="btn-tab-disaster" onclick="switchTab('tab-disaster', 'Flood & Cyclone Survival')"><span class="tab-icon">🌊</span><span>2. Flood &amp; Cyclone Hub</span></button>
+        <button type="button" class="tab-btn" id="btn-tab-helplines" onclick="switchTab('tab-helplines', 'Helplines & SOS Siren')"><span class="tab-icon">📞</span><span>3. Helplines &amp; Siren</span></button>
+        <button type="button" class="tab-btn" id="btn-tab-drugs" onclick="switchTab('tab-drugs', 'Medicine & Child Dose')"><span class="tab-icon">💊</span><span>4. Medicine &amp; Child Dose</span></button>
+        <button type="button" class="tab-btn" id="btn-tab-trauma" onclick="switchTab('tab-trauma', 'CPR Coach & Burn Lab')"><span class="tab-icon">🫀</span><span>5. CPR &amp; Burn Care</span></button>
+        <button type="button" class="tab-btn" id="btn-tab-history" onclick="switchTab('tab-history', 'Hospital Queue & Benchmark'); loadMassCasualtyQueue(); loadChromaExplorer();"><span class="tab-icon">🏥</span><span>6. Queue &amp; DB (<span id="logCountBadge">1</span>)</span></button>
+        <button type="button" class="tab-btn" id="btn-tab-manual" onclick="switchTab('tab-manual', 'Visual User Manual')"><span class="tab-icon">📖</span><span>7. User Manual</span></button>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- TAB 1: DUAL-MODE WORKSTATION (EMERGENCY vs REGULAR + TOP MANUAL)  -->
+    <!-- ================================================================= -->
+    <div id="tab-triage" class="tab-pane active">
+
+        <!-- ============================================================= -->
+        <!-- PLACED RIGHT BELOW YOUR RED LINE:                             -->
+        <!-- 1. EMERGENCY MODE | 2. REGULAR ASSISTANCE | 3. ENTER MANUALLY -->
+        <!-- ============================================================= -->
+        <div class="top-mode-bar no-print">
+            <button type="button" id="modeBtnEmergency" class="mode-switch-btn mode-emergency active-mode" onclick="setAssistanceMode('emergency')">
+                <span style="font-size:18px;">🚨</span>
+                <span>1. EMERGENCY &amp; DISASTER MODE</span>
+            </button>
+            <button type="button" id="modeBtnRegular" class="mode-switch-btn mode-regular" onclick="setAssistanceMode('regular')">
+                <span style="font-size:18px;">🩺</span>
+                <span>2. REGULAR DAILY ASSISTANCE</span>
+            </button>
+            <button type="button" id="manualEntryBtn" class="btn-manual-top" onclick="enableManualEntryMode()">
+                <span style="font-size:17px;">✍️</span>
+                <span>Enter Symptom &amp; Vitals Manually (Type Custom Case)</span>
+            </button>
+        </div>
+
+        <div class="kpi-grid no-print">
+            <div class="kpi-card"><div>⚡</div><div><div class="kpi-title">Vector Search</div><div class="kpi-value" id="kpiChroma">0.42 ms</div></div></div>
+            <div class="kpi-card"><div>🧠</div><div><div class="kpi-title">Local AI</div><div class="kpi-value" id="kpiOllama">Ready</div></div></div>
+            <div class="kpi-card"><div>🩺</div><div><div class="kpi-title">NEWS2 / Shock</div><div class="kpi-value" id="kpiNews2">N:1 | SI:0.73</div></div></div>
+            <div class="kpi-card"><div>🗄️</div><div><div class="kpi-title">Database</div><div class="kpi-value" id="kpiDocs">22 Docs</div></div></div>
+            <div class="kpi-card"><div>🔊</div><div><div class="kpi-title">Voice Speed</div><div class="kpi-value" id="kpiPrivacy">1.0x Normal</div></div></div>
+        </div>
+
+        <div class="workspace">
+            <!-- LEFT COLUMN -->
+            <div class="no-print">
+                <div class="panel">
+                    <h3 id="leftPanelHeading">🚨 Step 1: Select an Emergency Case, Tap Body Map, or Type Below</h3>
+                    <select id="scenarioDropdown" style="display:none;"><option value="1">1</option></select>
+
+                    <!-- MANUAL ENTRY INPUT CARD (MOVED ABOVE / EASILY ACCESSIBLE WITHOUT SCROLLING!) -->
+                    <div id="manualInputCard" style="background:var(--soft); border:1.5px solid var(--border); border-radius:12px; padding:10px 12px; margin-bottom:12px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:5px;">
+                            <label id="symptomBoxLabel" style="margin:0; color:var(--navy); font-size:12.5px;">✍️ Patient Symptom / Situation (Type or Speak in 4 Languages):</label>
+                            <div style="display:flex; gap:5px; align-items:center;">
+                                <select id="micLangSelect" style="width:auto; margin:0; padding:4px 8px; font-size:11.5px;">
+                                    <option value="en-IN" selected>🎙️ English</option>
+                                    <option value="te-IN">🎙️ తెలుగు</option>
+                                    <option value="ta-IN">🎙️ தமிழ்</option>
+                                    <option value="hi-IN">🎙️ हिन्दी</option>
+                                </select>
+                                <button type="button" id="micBtn" class="btn-tool" onclick="toggleContinuousMic()">🎙️ Voice Mic</button>
+                                <button type="button" class="btn-tool" onclick="clearManualInput()">🧹 Clear</button>
+                            </div>
+                        </div>
+                        <div id="micLiveStatus" style="display:none; background:#fef2f2; color:#dc2626; border:1px solid #fecaca; padding:6px 10px; border-radius:8px; font-size:12px; margin-bottom:8px; font-weight:700;">
+                            🔴 Listening Continuously — Speak freely (Click 'Stop Mic' when finished)...
+                        </div>
+                        <textarea id="situationText" oninput="onManualTyping()" placeholder="Type any emergency or regular daily health symptom here...">Our village is cut off by severe flooding with zero internet. Water is muddy and a 2-year-old child has severe watery diarrhea and dehydration. How do we purify the water and make homemade ORS with exact measurements?</textarea>
+
+                        <div class="input-row-3">
+                            <div><label>Age (Yrs):</label><input type="number" id="patientAge" value="2" min="0" max="110"></div>
+                            <div><label>Weight (kg):</label><input type="number" id="patientWeight" value="11" min="3" max="150"></div>
+                            <div>
+                                <label>Language:</label>
+                                <select id="languageInput" onchange="syncMicLanguage(); executeTriage();">
+                                    <option value="Telugu" selected>🇮🇳 English + తెలుగు</option>
+                                    <option value="Tamil">🇮🇳 English + தமிழ்</option>
+                                    <option value="Hindi">🇮🇳 English + हिन्दी</option>
+                                    <option value="English">🇬🇧 English Only</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <details id="vitalsDetailsBox" style="margin-bottom:8px; background:#ffffff; padding:6px 10px; border-radius:8px; border:1px solid var(--border-light);">
+                            <summary style="font-weight:700; font-size:12px; cursor:pointer; color:var(--primary-dark);">➕ ICU Vitals (Pulse, BP, SpO2, Temp — Auto-Opens in Manual Mode)</summary>
+                            <div class="input-row-5" style="margin-top:8px;">
+                                <div><label>Pulse</label><input type="number" id="vitalHR" value="126"></div>
+                                <div><label>Sys BP</label><input type="number" id="vitalBP" value="92"></div>
+                                <div><label>SpO2%</label><input type="number" id="vitalSpO2" value="97"></div>
+                                <div><label>Temp°F</label><input type="number" step="0.1" id="vitalTemp" value="99.5"></div>
+                                <div><label>State</label><select id="vitalAVPU"><option value="Alert" selected>Alert</option><option value="Confused">Confused</option><option value="Unconscious">Unresp</option></select></div>
+                            </div>
+                        </details>
+                        <input type="hidden" id="modelInput" value="gemma3:1b">
+
+                        <button type="button" class="btn-execute" id="runBtn" onclick="executeTriage()">
+                            🚨 GENERATE VISUAL GUIDE, SMART RECOMMENDATIONS &amp; VOICE
+                        </button>
+                    </div>
+
+                    <!-- BODY MAP + MODE-SPECIFIC CARDS -->
+                    <div class="intake-top-grid">
+                        <!-- INTERACTIVE SVG HUMAN BODY MAP -->
+                        <div class="body-map-box">
+                            <div style="font-size:11px; font-weight:800; color:#0369a1;">TAP BODY PART</div>
+                            <svg viewBox="0 0 120 240" width="110" height="195">
+                                <circle cx="60" cy="26" r="18" fill="#cbd5e1" stroke="#64748b" stroke-width="1.5"/>
+                                <rect x="52" y="44" width="16" height="14" rx="4" fill="#cbd5e1"/>
+                                <rect x="36" y="56" width="48" height="72" rx="10" fill="#cbd5e1" stroke="#64748b" stroke-width="1.5"/>
+                                <rect x="16" y="58" width="18" height="68" rx="8" fill="#cbd5e1" stroke="#64748b" stroke-width="1.5"/>
+                                <rect x="86" y="58" width="18" height="68" rx="8" fill="#cbd5e1" stroke="#64748b" stroke-width="1.5"/>
+                                <rect x="38" y="128" width="20" height="92" rx="8" fill="#cbd5e1" stroke="#64748b" stroke-width="1.5"/>
+                                <rect x="62" y="128" width="20" height="92" rx="8" fill="#cbd5e1" stroke="#64748b" stroke-width="1.5"/>
+
+                                <circle class="body-svg-spot" cx="60" cy="24" r="11" fill="#0284c7" onclick="onBodySpotClick('head')"><title>Head / Fever, Sunstroke & Headache</title></circle>
+                                <rect class="body-svg-spot" x="50" y="43" width="20" height="14" rx="5" fill="#ea580c" onclick="onBodySpotClick('throat')"><title>Throat & Airway / Asthma, Cough & Drowning</title></rect>
+                                <circle class="body-svg-spot" cx="60" cy="76" r="12" fill="#dc2626" onclick="onBodySpotClick('chest')"><title>Chest / Heart Attack & Chest Pain</title></circle>
+                                <ellipse class="body-svg-spot" cx="60" cy="108" rx="15" ry="11" fill="#0d9488" onclick="onBodySpotClick('stomach')"><title>Stomach / Flood Diarrhea, Food Poisoning & ORS</title></ellipse>
+                                <circle class="body-svg-spot" cx="25" cy="95" r="10" fill="#d97706" onclick="onBodySpotClick('arm')"><title>Arm / Electric Shock, Burn & Fainting</title></circle>
+                                <circle class="body-svg-spot" cx="48" cy="175" r="11" fill="#7c3aed" onclick="onBodySpotClick('leg')"><title>Leg / Deep Bleeding & Fracture</title></circle>
+                                <circle class="body-svg-spot" cx="72" cy="198" r="11" fill="#e11d48" onclick="onBodySpotClick('ankle')"><title>Ankle / Flood Snakebite</title></circle>
+                            </svg>
+                            <div style="font-size:10px; color:#0369a1; font-weight:700;">Tap any colored spot!</div>
+                        </div>
+
+                        <!-- MODE 1: EMERGENCY & DISASTER CARDS -->
+                        <div id="emergencyCardsSection">
+                            <div class="category-divider cat-disaster">
+                                <span>🚨 Emergency &amp; Natural Disaster Cases</span>
+                                <span class="pill pill-red">Critical Triage</span>
+                            </div>
+                            <div class="scenario-grid">
+                                <button type="button" id="scenBtn1" class="btn-scenario active-scenario" onclick="selectScenario(1, true)">
+                                    <div class="scen-thumb" style="background:#e0f2fe; font-size:20px;">🌊</div>
+                                    <div><b>1. Flood Diarrhea &amp; ORS</b><br><span style="font-size:10.5px; color:var(--muted);">Dirty water &amp; dehydration</span></div>
+                                </button>
+                                <button type="button" id="scenBtn2" class="btn-scenario" onclick="selectScenario(2, true)">
+                                    <div class="scen-thumb" style="background:#fef9c3; font-size:20px;">⚡</div>
+                                    <div><b>2. Electric Shock &amp; Burn</b><br><span style="font-size:10.5px; color:var(--muted);">Fallen wire &amp; 20m cooling</span></div>
+                                </button>
+                                <button type="button" id="scenBtn3" class="btn-scenario" onclick="selectScenario(3, true)">
+                                    <div class="scen-thumb" style="background:#fee2e2; font-size:20px;">🐍</div>
+                                    <div><b>3. Flood Snakebite</b><br><span style="font-size:10.5px; color:var(--muted);">Splint &amp; no-tourniquet</span></div>
+                                </button>
+                                <button type="button" id="scenBtn4" class="btn-scenario" onclick="selectScenario(4, true)">
+                                    <div class="scen-thumb" style="background:#dbeafe; font-size:20px;">🫁</div>
+                                    <div><b>4. Flood Drowning</b><br><span style="font-size:10.5px; color:var(--muted);">5 rescue breaths &amp; CPR</span></div>
+                                </button>
+                                <button type="button" id="scenBtn5" class="btn-scenario" onclick="selectScenario(5, true)">
+                                    <div class="scen-thumb" style="background:#ffedd5; font-size:20px;">☀️</div>
+                                    <div><b>5. Heatstroke Collapse</b><br><span style="font-size:10.5px; color:var(--muted);">Sunstroke rapid cooling</span></div>
+                                </button>
+                                <button type="button" id="scenBtn8" class="btn-scenario" onclick="selectScenario(8, true)">
+                                    <div class="scen-thumb" style="background:#ffe4e6; font-size:20px;">❤️</div>
+                                    <div><b>6. Chest Pain / Heart</b><br><span style="font-size:10.5px; color:var(--muted);">W-Position &amp; Aspirin</span></div>
+                                </button>
+                                <button type="button" id="scenBtn10" class="btn-scenario" onclick="selectScenario(10, true)">
+                                    <div class="scen-thumb" style="background:#fee2e2; font-size:20px;">🩸</div>
+                                    <div><b>7. Bleeding &amp; Fracture</b><br><span style="font-size:10.5px; color:var(--muted);">10m pressure &amp; splint</span></div>
+                                </button>
+                                <button type="button" id="scenBtn6" class="btn-scenario" onclick="selectScenario(6, true)">
+                                    <div class="scen-thumb" style="background:#f3e8ff; font-size:20px;">❄️</div>
+                                    <div><b>8. Cyclone Cold Shiver</b><br><span style="font-size:10.5px; color:var(--muted);">Hypothermia dry blanket</span></div>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- MODE 2: REGULAR DAILY MEDICAL ASSISTANCE CARDS -->
+                        <div id="regularCardsSection" style="display:none;">
+                            <div class="category-divider cat-daily">
+                                <span>🩺 Regular Daily Medical Assistance</span>
+                                <span class="pill pill-green">Primary Care &amp; Home Remedies</span>
+                            </div>
+                            <div class="scenario-grid">
+                                <button type="button" id="scenBtn7" class="btn-scenario" onclick="selectScenario(7, true)">
+                                    <div class="scen-thumb" style="background:#dcfce7; font-size:20px;">🌡️</div>
+                                    <div><b>1. Viral Fever &amp; Dengue</b><br><span style="font-size:10.5px; color:var(--muted);">Safe tablet &amp; platelets</span></div>
+                                </button>
+                                <button type="button" id="scenBtn9" class="btn-scenario" onclick="selectScenario(9, true)">
+                                    <div class="scen-thumb" style="background:#fef3c7; font-size:20px;">🤢</div>
+                                    <div><b>2. Food Poison &amp; Vomit</b><br><span style="font-size:10.5px; color:var(--muted);">Stomach ache &amp; ORS sips</span></div>
+                                </button>
+                                <button type="button" id="scenBtn13" class="btn-scenario" onclick="selectScenario(13, true)">
+                                    <div class="scen-thumb" style="background:#ffedd5; font-size:20px;">🗣️</div>
+                                    <div><b>3. Cold, Cough &amp; Throat</b><br><span style="font-size:10.5px; color:var(--muted);">Warm salt gargle &amp; diet</span></div>
+                                </button>
+                                <button type="button" id="scenBtn14" class="btn-scenario" onclick="selectScenario(14, true)">
+                                    <div class="scen-thumb" style="background:#e0f2fe; font-size:20px;">🤕</div>
+                                    <div><b>4. Headache &amp; Toothache</b><br><span style="font-size:10.5px; color:var(--muted);">Migraine &amp; gum care</span></div>
+                                </button>
+                                <button type="button" id="scenBtn11" class="btn-scenario" onclick="selectScenario(11, true)">
+                                    <div class="scen-thumb" style="background:#e0e7ff; font-size:20px;">😮‍💨</div>
+                                    <div><b>5. Asthma &amp; Breathing</b><br><span style="font-size:10.5px; color:var(--muted);">Sit upright &amp; 4 puffs</span></div>
+                                </button>
+                                <button type="button" id="scenBtn12" class="btn-scenario" onclick="selectScenario(12, true)">
+                                    <div class="scen-thumb" style="background:#fae8ff; font-size:20px;">😵</div>
+                                    <div><b>6. Weakness / Low Sugar</b><br><span style="font-size:10.5px; color:var(--muted);">Rule of 15 fast sugar</span></div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: ILLUSTRATED DIAGRAM + SMART RECOMMENDATION CARDS + VOICE -->
+            <div>
+                <div class="panel">
+                    <!-- 4-LANGUAGE VOICE BAR AT THE VERY TOP OF RESULTS -->
+                    <div class="no-print" style="background:#f0fdf4; border:2px solid #86efac; border-radius:11px; padding:9px 12px; margin-bottom:12px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                            <div style="display:flex; gap:5px; flex-wrap:wrap; align-items:center;">
+                                <span style="font-weight:800; font-size:12.5px; color:#14532d;">🔊 Listen Aloud:</span>
+                                <button type="button" class="btn-tool btn-speak-lang" onclick="speakInLanguage('English')">🇬🇧 English</button>
+                                <button type="button" class="btn-tool btn-speak-lang" onclick="speakInLanguage('Telugu')">🇮🇳 తెలుగు</button>
+                                <button type="button" class="btn-tool btn-speak-lang" onclick="speakInLanguage('Tamil')">🇮🇳 தமிழ்</button>
+                                <button type="button" class="btn-tool btn-speak-lang" onclick="speakInLanguage('Hindi')">🇮🇳 हिन्दी</button>
+                                <button type="button" class="btn-tool" onclick="stopVoice()">⏹️ Stop</button>
+                            </div>
+                            <div style="display:flex; gap:5px; align-items:center;">
+                                <div class="speed-control-group">
+                                    <span>Speed:</span>
+                                    <button type="button" class="speed-btn" data-speed="0.75" onclick="setVoiceSpeed(0.75)">0.75x</button>
+                                    <button type="button" class="speed-btn active-speed" data-speed="1" onclick="setVoiceSpeed(1.0)">1.0x</button>
+                                    <button type="button" class="speed-btn" data-speed="1.25" onclick="setVoiceSpeed(1.25)">1.25x</button>
+                                    <button type="button" class="speed-btn" data-speed="1.5" onclick="setVoiceSpeed(1.5)">1.5x</button>
+                                </div>
+                                <button type="button" class="btn-tool" onclick="precacheAllVoices()">📥 Save Offline</button>
+                                <button type="button" class="btn-tool" onclick="window.print()">🖨️ Print</button>
+                            </div>
+                        </div>
+                        <div id="ttsStatusBanner" class="tts-status-banner">🔊 Speaking...</div>
+                    </div>
+
+                    <!-- VISUAL ILLUSTRATED HERO CARD -->
+                    <div id="visualGuideContainer"></div>
+
+                    <!-- 3 SMART VISUAL SUMMARY & RECOMMENDATION CARDS -->
+                    <div id="smartRecsContainer"></div>
+
+                    <!-- VISUAL HEALTH METERS -->
+                    <div class="meter-grid">
+                        <div class="meter-box">
+                            <div style="display:flex; justify-content:space-between; font-size:11.5px; font-weight:800;"><span>🚨 Urgency Score</span><span id="meterRiskVal">80/100</span></div>
+                            <div class="meter-track"><div id="meterRiskBar" class="meter-fill" style="width:80%; background:#ea580c;"></div></div>
+                        </div>
+                        <div class="meter-box">
+                            <div style="display:flex; justify-content:space-between; font-size:11.5px; font-weight:800;"><span>🩺 NEWS2 Vitals</span><span id="meterNewsVal">4/14</span></div>
+                            <div class="meter-track"><div id="meterNewsBar" class="meter-fill" style="width:32%; background:#16a34a;"></div></div>
+                        </div>
+                        <div class="meter-box">
+                            <div style="display:flex; justify-content:space-between; font-size:11.5px; font-weight:800;"><span>⚖️ Safe Weight Dose</span><span id="meterDoseVal">11 kg Dose</span></div>
+                            <div class="meter-track"><div class="meter-fill" style="width:90%; background:#0284c7;"></div></div>
+                        </div>
+                    </div>
+
+                    <div id="triageBanner" style="display:none;"></div>
+                    <div id="vitalsBanner" style="display:none;"></div>
+                    <div id="dosingBanner" class="dosing-card"></div>
+
+                    <!-- FULL DETAILED BILINGUAL ACTION PLAN -->
+                    <div id="aiPlanOutput" class="ai-plan-container"></div>
+                    <div id="chromaResultsBox" style="margin-top:8px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- TAB 2: CYCLONE, FLOOD & DISASTER SURVIVAL HUB -->
+    <!-- ================================================================= -->
+    <div id="tab-disaster" class="tab-pane">
+        <div class="workspace">
+            <div>
+                <div class="panel">
+                    <h3>🌊 Select a Disaster for Visual Survival Guide &amp; Voice</h3>
+                    <div class="disaster-grid">
+                        <button type="button" id="disBtn-cyclone" class="btn-scenario active-scenario" onclick="loadDisasterGuide('cyclone')"><div class="scen-thumb" style="font-size:22px;">🌀</div><div><b>1. Cyclone</b><br><span style="font-size:11px; color:var(--muted);">High winds</span></div></button>
+                        <button type="button" id="disBtn-flood" class="btn-scenario" onclick="loadDisasterGuide('flood')"><div class="scen-thumb" style="font-size:22px;">🌊</div><div><b>2. Flash Flood</b><br><span style="font-size:11px; color:var(--muted);">Roof rescue</span></div></button>
+                        <button type="button" id="disBtn-lightning" class="btn-scenario" onclick="loadDisasterGuide('lightning')"><div class="scen-thumb" style="font-size:22px;">⚡</div><div><b>3. Lightning</b><br><span style="font-size:11px; color:var(--muted);">30-30 rule</span></div></button>
+                        <button type="button" id="disBtn-heatwave" class="btn-scenario" onclick="loadDisasterGuide('heatwave')"><div class="scen-thumb" style="font-size:22px;">☀️</div><div><b>4. Heatwave</b><br><span style="font-size:11px; color:var(--muted);">Sunstroke</span></div></button>
+                        <button type="button" id="disBtn-earthquake" class="btn-scenario" onclick="loadDisasterGuide('earthquake')"><div class="scen-thumb" style="font-size:22px;">🌍</div><div><b>5. Earthquake</b><br><span style="font-size:11px; color:var(--muted);">Drop &amp; Cover</span></div></button>
+                        <button type="button" id="disBtn-blackout" class="btn-scenario" onclick="loadDisasterGuide('blackout')"><div class="scen-thumb" style="font-size:22px;">🔦</div><div><b>6. Blackout</b><br><span style="font-size:11px; color:var(--muted);">Insulin pot</span></div></button>
+                    </div>
+
+                    <div style="background:var(--primary-light); border:1.5px solid #7dd3fc; border-radius:12px; padding:12px;">
+                        <h3 style="margin:0 0 8px 0; border:none; padding:0; color:#0c4a6e;">💧 Flood Water Purification &amp; ORS Calculator</h3>
+                        <div class="input-row-2">
+                            <div><label>Liters of Water:</label><input type="number" id="waterLitersInput" value="5" min="1" max="500" oninput="calculateWaterPurification()"></div>
+                            <div><label>Water Condition:</label><select id="waterClarityInput" onchange="calculateWaterPurification()"><option value="clear">Clear Water</option><option value="cloudy" selected>Cloudy Flood Water</option></select></div>
+                        </div>
+                        <div id="waterCalcResult" style="background:#fff; padding:10px; border-radius:8px; font-size:13px;"></div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <h3 style="margin:0; border:none; padding:0;">🎒 72-Hour Family Survival Go-Bag Checklist</h3>
+                        <span id="kitProgressBadge" class="pill pill-green">0 / 8 Packed</span>
+                    </div>
+                    <div id="survivalKitList" style="margin-top:8px;">
+                        <label class="check-row"><input type="checkbox" onchange="updateKitProgress()"> <span><b>Drinking Water &amp; ORS:</b> 3 Liters/person + 5 ORS packets + Chlorine tablets</span></label>
+                        <label class="check-row"><input type="checkbox" onchange="updateKitProgress()"> <span><b>First-Aid &amp; Medicines:</b> Paracetamol, bandages, Betadine, BP/Sugar tablets</span></label>
+                        <label class="check-row"><input type="checkbox" onchange="updateKitProgress()"> <span><b>Torch, Whistle &amp; Powerbank:</b> Charged powerbank, LED torch, rescue whistle</span></label>
+                        <label class="check-row"><input type="checkbox" onchange="updateKitProgress()"> <span><b>Dry Non-Cook Food:</b> Roasted gram, dry fruits, biscuits, jaggery</span></label>
+                        <label class="check-row"><input type="checkbox" onchange="updateKitProgress()"> <span><b>Waterproof Document Bag:</b> Aadhaar, Ration card, cash sealed in plastic</span></label>
+                        <label class="check-row"><input type="checkbox" onchange="updateKitProgress()"> <span><b>Dry Clothes &amp; Blanket:</b> 2 sets of clothes, raincoat/plastic sheet</span></label>
+                        <label class="check-row"><input type="checkbox" onchange="updateKitProgress()"> <span><b>Baby &amp; Elderly Care:</b> Milk powder, diapers, spectacles, contact card</span></label>
+                        <label class="check-row"><input type="checkbox" onchange="updateKitProgress()"> <span><b>Main Switches OFF:</b> Turn off LPG gas valve &amp; main electricity breaker</span></label>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="panel">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+                        <h3 id="disasterTitleHeader" style="margin:0; border:none; padding:0;">🌀 Cyclone Survival Guide</h3>
+                        <div style="display:flex; gap:5px; flex-wrap:wrap;">
+                            <button type="button" class="btn-tool btn-speak-lang" onclick="speakModuleLanguage('disaster', 'English')">🇬🇧 English</button>
+                            <button type="button" class="btn-tool btn-speak-lang" onclick="speakModuleLanguage('disaster', 'Telugu')">🇮🇳 తెలుగు</button>
+                            <button type="button" class="btn-tool btn-speak-lang" onclick="speakModuleLanguage('disaster', 'Tamil')">🇮🇳 தமிழ்</button>
+                            <button type="button" class="btn-tool btn-speak-lang" onclick="speakModuleLanguage('disaster', 'Hindi')">🇮🇳 हिन्दी</button>
+                            <button type="button" class="btn-tool" onclick="stopVoice()">⏹️ Stop</button>
+                        </div>
+                    </div>
+                    <div id="disasterTtsBanner" class="tts-status-banner" style="margin-bottom:10px;">🔊 Speaking...</div>
+                    <div id="disasterGuideContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- TAB 3: HELPLINES & OFFLINE RESCUE SIREN -->
+    <!-- ================================================================= -->
+    <div id="tab-helplines" class="tab-pane">
+        <div class="panel" style="background:linear-gradient(135deg, #7f1d1d 0%, #dc2626 100%); color:#fff; border:none;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;">
+                <div>
+                    <h3 style="color:#fff; border:none; padding:0; margin:0 0 4px 0; font-size:18px;">🚨 Offline Acoustic Rescue Siren &amp; Night SOS Flashlight</h3>
+                    <p style="margin:0; color:#fecaca; font-size:13px;">Works with 0% internet/mobile signal to alert NDRF flood boats and helicopters.</p>
+                </div>
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <button type="button" id="mainSirenBtn" class="btn-tool" style="background:#fef08a; color:#7f1d1d; font-size:14px; padding:12px 18px; border:none;" onclick="toggleSosSiren()">🔊 START LOUD RESCUE SIREN</button>
+                    <button type="button" class="btn-tool" style="background:#fff; color:#7f1d1d; font-size:14px; padding:12px 18px; border:none;" onclick="startSosBeacon()">🔦 FULL-SCREEN SOS FLASHLIGHT</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h3>📞 India 24×7 Emergency &amp; Disaster Helpline Directory</h3>
+            <div class="helpline-grid">
+                <div class="helpline-card"><div><span class="pill pill-green">All-in-One SOS</span><div class="helpline-num">112</div><b>National Emergency Number</b><p style="font-size:12px; color:var(--muted);">Police, Fire, Ambulance &amp; Disaster Rescue across India.</p></div><a href="tel:112" class="btn-execute" style="text-align:center; text-decoration:none; padding:9px;">📞 Dial 112</a></div>
+                <div class="helpline-card"><div><span class="pill pill-green">Free Ambulance</span><div class="helpline-num">108</div><b>Emergency Medical Ambulance</b><p style="font-size:12px; color:var(--muted);">24×7 ICU trauma, snakebite, cardiac &amp; maternity ambulance.</p></div><a href="tel:108" class="btn-execute" style="text-align:center; text-decoration:none; padding:9px;">🚑 Dial 108</a></div>
+                <div class="helpline-card"><div><span class="pill pill-green">Flood &amp; Cyclone</span><div class="helpline-num">1078 / 1070</div><b>NDMA &amp; State Disaster Help</b><p style="font-size:12px; color:var(--muted);">1078 (NDMA), 1070 (State Relief), 1077 (District Collector).</p></div><a href="tel:1078" class="btn-execute" style="text-align:center; text-decoration:none; padding:9px; background:var(--primary);">🌊 Dial 1078</a></div>
+                <div class="helpline-card"><div><span class="pill pill-green">NDRF Rescue</span><div class="helpline-num">9711077372</div><b>NDRF Flood Boat Control Room</b><p style="font-size:12px; color:var(--muted);">24×7 NDRF HQ Rescue Evacuation (Also: 011-24363260).</p></div><a href="tel:9711077372" class="btn-execute" style="text-align:center; text-decoration:none; padding:9px; background:var(--primary);">🛟 Call NDRF</a></div>
+                <div class="helpline-card"><div><span class="pill pill-green">Doctor Advice</span><div class="helpline-num">104</div><b>Health &amp; Fever Helpline</b><p style="font-size:12px; color:var(--muted);">24×7 free doctor advice, medicine dose &amp; blood bank info.</p></div><a href="tel:104" class="btn-execute" style="text-align:center; text-decoration:none; padding:9px; background:var(--green);">🩺 Dial 104</a></div>
+                <div class="helpline-card"><div><span class="pill pill-green">Poison / Snakebite</span><div class="helpline-num">1066</div><b>Poison &amp; Toxicology Center</b><p style="font-size:12px; color:var(--muted);">Antidote guidance for pesticide, chemical, or drug overdose.</p></div><a href="tel:1066" class="btn-execute" style="text-align:center; text-decoration:none; padding:9px;">🐍 Dial 1066</a></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- TAB 4: MEDICINE SAFETY & CHILD DOSE -->
+    <!-- ================================================================= -->
+    <div id="tab-drugs" class="tab-pane">
+        <div class="workspace">
+            <div class="panel">
+                <h3>💊 Check Medicine Safety &amp; Child Weight Dose</h3>
+                <div class="scenario-grid" style="margin-bottom:10px;">
+                    <button type="button" id="drugBtn1" class="btn-scenario active-scenario" onclick="loadDrugPreset('Warfarin + Ibuprofen + Paracetamol', 68, 65, 1)"><div class="scen-thumb">🩸</div><div><b>1. Warfarin + Ibuprofen</b><br><span style="font-size:11px; color:var(--muted);">Internal bleeding risk</span></div></button>
+                    <button type="button" id="drugBtn2" class="btn-scenario" onclick="loadDrugPreset('Sildenafil + Nitroglycerin / Sorbitrate', 58, 74, 2)"><div class="scen-thumb">❤️</div><div><b>2. Sildenafil + Sorbitrate</b><br><span style="font-size:11px; color:var(--muted);">Fatal BP drop</span></div></button>
+                    <button type="button" id="drugBtn3" class="btn-scenario" onclick="loadDrugPreset('Dengue Fever + Combiflam / Aspirin', 12, 32, 3)"><div class="scen-thumb">🦟</div><div><b>3. Dengue + Combiflam</b><br><span style="font-size:11px; color:var(--muted);">Platelet destruction</span></div></button>
+                    <button type="button" id="drugBtn4" class="btn-scenario" onclick="loadDrugPreset('Metronidazole + Alcohol', 29, 62, 4)"><div class="scen-thumb">🧪</div><div><b>4. Metronidazole + Alcohol</b><br><span style="font-size:11px; color:var(--muted);">Toxic reaction</span></div></button>
+                </div>
+                <button type="button" id="manualDrugBtn" class="btn-manual-top" style="margin-bottom:10px;" onclick="enableManualDrugMode()">
+                    ✍️ Enter Custom Medicines &amp; Child Weight Manually
+                </button>
+                <label>Medicines or Condition (Supports Combiflam, Meftal, Sorbitrate, Brufen):</label>
+                <input type="text" id="drugInputText" value="Warfarin + Ibuprofen" placeholder="Type any medicines or illness here...">
+                <div class="input-row-2">
+                    <div><label>Patient Age (Years):</label><input type="number" id="drugAge" value="68"></div>
+                    <div><label>Patient Weight (kg):</label><input type="number" id="drugWeight" value="65"></div>
+                </div>
+                <button type="button" class="btn-execute" onclick="runDrugCheck()">🔍 CHECK MEDICINE SAFETY &amp; CHILD DOSE</button>
+            </div>
+
+            <div class="panel">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+                    <h3 style="margin:0; border:none; padding:0;">📋 Pharmacy Safety Report &amp; Voice</h3>
+                    <div style="display:flex; gap:5px; flex-wrap:wrap;">
+                        <button type="button" class="btn-tool btn-speak-lang" onclick="speakModuleLanguage('drug', 'English')">🇬🇧 English</button>
+                        <button type="button" class="btn-tool btn-speak-lang" onclick="speakModuleLanguage('drug', 'Telugu')">🇮🇳 తెలుగు</button>
+                        <button type="button" class="btn-tool btn-speak-lang" onclick="speakModuleLanguage('drug', 'Tamil')">🇮🇳 தமிழ்</button>
+                        <button type="button" class="btn-tool btn-speak-lang" onclick="speakModuleLanguage('drug', 'Hindi')">🇮🇳 हिन्दी</button>
+                        <button type="button" class="btn-tool" onclick="stopVoice()">⏹️ Stop</button>
+                    </div>
+                </div>
+                <div id="drugTtsBanner" class="tts-status-banner" style="margin-bottom:10px;">🔊 Speaking...</div>
+                <div id="drugCheckOutput"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- TAB 5: CPR METRONOME, TIMERS & BURN/COMA CALCULATOR -->
+    <!-- ================================================================= -->
+    <div id="tab-trauma" class="tab-pane">
+        <div class="workspace-equal">
+            <div class="panel" style="text-align:center;">
+                <h3>🫀 110-BPM CPR Chest Compression Audio Coach</h3>
+                <div id="cprHeartCircle" class="cpr-circle">❤️ 110</div>
+                <div id="cprStepCounter" style="font-size:15px; font-weight:800; margin-bottom:12px;">Press Start for 110-BPM Audio Beat</div>
+                <button type="button" class="btn-execute" style="max-width:280px;" id="cprToggleBtn" onclick="toggleCprMetronome()">▶️ Start 110-BPM CPR Audio Coach</button>
+            </div>
+            <div class="panel">
+                <h3>⏱️ Emergency Washing &amp; Bleeding Timers</h3>
+                <div class="scenario-grid" style="margin-bottom:10px;">
+                    <button type="button" class="btn-tool" style="padding:10px;" onclick="startWashTimer(1200, 'Burn Water Cooling (20 Mins)')">🔥 20-Min Burn Cooling</button>
+                    <button type="button" class="btn-tool" style="padding:10px;" onclick="startWashTimer(600, 'Direct Bleeding Pressure (10 Mins)')">🩸 10-Min Bleeding Pressure</button>
+                    <button type="button" class="btn-tool" style="padding:10px;" onclick="startWashTimer(900, 'Chemical / Wound Wash (15 Mins)')">🚿 15-Min Wound / Eye Wash</button>
+                    <button type="button" class="btn-tool btn-speak-lang" style="padding:10px;" onclick="startWashTimer(5, 'Judge Demo Timer (5 Seconds)')">⚡ 5-Sec Demo Timer</button>
+                </div>
+                <div class="protocol-card" style="text-align:center; padding:14px;">
+                    <div id="timerLabel" style="font-weight:800; color:var(--primary-dark);">Select a Timer Above</div>
+                    <div id="timerDisplay" style="font-size:38px; font-weight:900; color:var(--green);">00:00</div>
+                    <button type="button" class="btn-tool" onclick="stopWashTimer()">⏹️ Reset</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="workspace">
+            <div class="panel">
+                <h3>🔥 Parkland Burn Fluid &amp; Glasgow Coma Calculator</h3>
+                <div class="input-row-3">
+                    <div><label>Eyes (E1–E4):</label><select id="gcsEye"><option value="4" selected>4 - Normal</option><option value="3">3 - Voice</option><option value="2">2 - Pain</option><option value="1">1 - None</option></select></div>
+                    <div><label>Speech (V1–V5):</label><select id="gcsVerbal"><option value="5" selected>5 - Normal</option><option value="4">4 - Confused</option><option value="3">3 - Words</option><option value="2">2 - Sounds</option><option value="1">1 - None</option></select></div>
+                    <div><label>Motor (M1–M6):</label><select id="gcsMotor"><option value="6" selected>6 - Normal</option><option value="5">5 - Localizes</option><option value="4">4 - Withdraws</option><option value="3">3 - Flexion</option><option value="2">2 - Extension</option><option value="1">1 - None</option></select></div>
+                </div>
+                <div class="input-row-2">
+                    <div><label>Weight (kg):</label><input type="number" id="traumaWeight" value="60"></div>
+                    <div><label>Burn Area (% TBSA):</label><input type="number" id="traumaBurnPct" value="25"></div>
+                </div>
+                <button type="button" class="btn-execute" onclick="runTraumaLab()">⚡ CALCULATE BURN FLUIDS &amp; COMA SCORE</button>
+            </div>
+            <div class="panel">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+                    <h3 style="margin:0; border:none; padding:0;">🩺 Burn &amp; Coma Output + Voice</h3>
+                    <div style="display:flex; gap:5px; flex-wrap:wrap;">
+                        <button type="button" class="btn-tool btn-speak-lang" onclick="speakModuleLanguage('trauma', 'English')">🇬🇧 English</button>
+                        <button type="button" class="btn-tool btn-speak-lang" onclick="speakModuleLanguage('trauma', 'Telugu')">🇮🇳 తెలుగు</button>
+                        <button type="button" class="btn-tool btn-speak-lang" onclick="speakModuleLanguage('trauma', 'Tamil')">🇮🇳 தமிழ்</button>
+                        <button type="button" class="btn-tool btn-speak-lang" onclick="speakModuleLanguage('trauma', 'Hindi')">🇮🇳 हिन्दी</button>
+                        <button type="button" class="btn-tool" onclick="stopVoice()">⏹️ Stop</button>
+                    </div>
+                </div>
+                <div id="traumaTtsBanner" class="tts-status-banner" style="margin-bottom:10px;">🔊 Speaking...</div>
+                <div id="traumaLabOutput"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- TAB 6: HOSPITAL QUEUE & CHROMADB BENCHMARK -->
+    <!-- ================================================================= -->
+    <div id="tab-history" class="tab-pane">
+        <div class="panel">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+                <h3 style="margin:0; border:none; padding:0;">🏥 SQLite3 Mass-Casualty Patient Queue (Auto-Sorted by CODE RED)</h3>
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <button type="button" class="btn-execute" style="width:auto; padding:9px 14px;" onclick="simulateMassCasualty()">⚡ Simulate +4 Cyclone Patients</button>
+                    <button type="button" class="btn-tool" onclick="exportHistoryCsv()">📥 Download CSV</button>
+                    <button type="button" class="btn-tool" onclick="clearMassCasualty()">🗑️ Clear Queue</button>
+                </div>
+            </div>
+            <div id="historyTableContainer"></div>
+        </div>
+
+        <div class="panel">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                <h3 style="margin:0; border:none; padding:0;">🏆 10-Case Automated ChromaDB Accuracy Benchmark</h3>
+                <button type="button" class="btn-execute" style="max-width:300px;" onclick="runLiveBenchmark()">⚡ Run 10-Case Benchmark</button>
+            </div>
+            <div id="benchmarkOutput" style="margin-top:10px;"></div>
+        </div>
+
+        <div class="workspace">
+            <div class="panel">
+                <h3>➕ Add Custom Hospital Protocol</h3>
+                <div class="input-row-2"><input type="text" id="customTitle" placeholder="Protocol Title"><input type="text" id="customCategory" placeholder="Category"></div>
+                <textarea id="customContent" placeholder="Enter verified steps..."></textarea>
+                <button type="button" class="btn-tool" style="width:100%; justify-content:center; padding:10px; background:var(--primary); color:#fff;" onclick="addCustomProtocol()">📥 Save Protocol</button>
+                <div id="customStatus" style="color:var(--green); font-weight:700; margin-top:6px;"></div>
+            </div>
+            <div class="panel">
+                <h3>🗄️ Indexed Protocols (<span id="explorerTotal">22</span>)</h3>
+                <div id="chromaExplorerList" style="max-height:220px; overflow-y:auto;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- TAB 7: VISUAL USER MANUAL & JUDGE HANDBOOK -->
+    <!-- ================================================================= -->
+    <div id="tab-manual" class="tab-pane">
+        <div class="panel">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
+                <div>
+                    <h3 style="margin:0; border:none; padding:0; font-size:19px;">📖 Visual User Manual &amp; Hackathon Judge Guide</h3>
+                    <p style="margin:3px 0 0; color:var(--muted);">Click any language button on the right to hear the audio user guide aloud.</p>
+                </div>
+                <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                    <button type="button" class="btn-tool btn-speak-lang" onclick="speakModuleLanguage('manual', 'English')">🔊 English Guide</button>
+                    <button type="button" class="btn-tool btn-speak-lang" onclick="speakModuleLanguage('manual', 'Telugu')">🔊 తెలుగు గైడ్</button>
+                    <button type="button" class="btn-tool btn-speak-lang" onclick="speakModuleLanguage('manual', 'Tamil')">🔊 தமிழ் வழிகாட்டி</button>
+                    <button type="button" class="btn-tool btn-speak-lang" onclick="speakModuleLanguage('manual', 'Hindi')">🔊 हिन्दी गाइड</button>
+                    <button type="button" class="btn-tool" onclick="stopVoice()">⏹️ Stop</button>
+                </div>
+            </div>
+            <div id="manualTtsBanner" class="tts-status-banner" style="margin-bottom:12px;">🔊 Reading User Manual...</div>
+
+            <div class="smart-cards-grid">
+                <div class="smart-card smart-do">
+                    <h4>🚨 1. Top Dual-Mode Bar &amp; Manual Entry</h4>
+                    <p style="font-size:12.5px; margin:0;">Right below the top navigation tabs, switch between <b>🚨 Emergency &amp; Disaster Mode</b>, <b>🩺 Regular Daily Medical Assistance</b>, or click <b>✍️ Enter Symptom &amp; Vitals Manually</b> to type any custom case immediately.</p>
+                </div>
+                <div class="smart-card smart-rec">
+                    <h4>🔊 2. 4-Language Voice &amp; Continuous Mic</h4>
+                    <p style="font-size:12.5px; margin:0;">Speak symptoms in <b>English, Telugu, Tamil, or Hindi</b> using the continuous voice mic, and listen to complete multi-sentence guidance at <b>0.75x to 1.5x</b> speed.</p>
+                </div>
+                <div class="smart-card smart-dont">
+                    <h4>🌊 3. Cyclone Survival, Helplines &amp; Siren</h4>
+                    <p style="font-size:12.5px; margin:0;">Use Tab 2 for <b>Cyclone/Flood Before-During-After</b> guides and water purification math. Use Tab 3 for <b>112 / 108 / 1078</b> helplines and the <b>Offline Rescue Siren</b>.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

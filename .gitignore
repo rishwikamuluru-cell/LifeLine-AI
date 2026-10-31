@@ -1,0 +1,6 @@
+.venv/
+__pycache__/
+lifeline_chroma_db/
+lifeline_voice_cache/*.mp3
+*.db
+.vscode/
